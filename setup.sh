@@ -18,11 +18,18 @@ fi
 
 echo "Detected OS: $OS"
 
-# Install Homebrew on Linux if needed
-if [[ "$OS" == "linux" && ! $(command -v brew) ]]; then
-    echo "Installing Homebrew for Linux..."
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+# Install or initialize Homebrew on Linux. Homebrew is installed outside the
+# default PATH, so command -v alone cannot detect it in a fresh shell.
+if [[ "$OS" == "linux" ]]; then
+    if [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+    elif command -v brew &>/dev/null; then
+        eval "$(brew shellenv)"
+    else
+        echo "Installing Homebrew for Linux..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+    fi
     PM="brew"
 fi
 
@@ -47,8 +54,8 @@ install_pkg() {
 
 install_pkg zsh
 install_pkg tmux
-install_pkg neovim
-install_pkg ripgrep
+install_pkg nvim neovim neovim
+install_pkg rg ripgrep ripgrep
 install_pkg fzf
 install_pkg bat
 install_pkg eza
